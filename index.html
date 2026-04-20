@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXON — Technology Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Syne:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   NEXON — TECHNOLOGY INTELLIGENCE DASHBOARD
+   Design System: Luxury Dark · Gold Accent
+   ═══════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:           #000000;
+  --near-black:      #080808;
+  --surface:         #0c0c0c;
+  --surface-raised:  #111111;
+  --surface-hover:   #161616;
+  --border:          #1e1e1e;
+  --border-subtle:   #141414;
+
+  --gold:            #D4AF37;
+  --gold-bright:     #F2CC54;
+  --gold-dim:        #7A621A;
+  --gold-faint:      rgba(212,175,55,0.06);
+  --gold-glow:       rgba(212,175,55,0.20);
+  --gold-glow-sm:    rgba(212,175,55,0.10);
+
+  --text-1:          #F2EDE4;
+  --text-2:          #9A9490;
+  --text-3:          #545050;
+  --text-4:          #2E2E2E;
+
+  --red:             #FF3B30;
+  --green:           #34C759;
+
+  --font-brand:  'Syncopate', sans-serif;
+  --font-ui:     'Syne', sans-serif;
+  --font-mono:   'Space Mono', monospace;
+
+  --hdr: 60px;
+  --tick: 34px;
+  --tabs: 50px;
+  --sbar: 36px;
+  --side: 290px;
+  --sticky-top: calc(var(--tick) + var(--hdr) + var(--tabs));
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ═══════ LOADING OVERLAY ═══════ */
+#loading {
+  position: fixed; inset: 0;
+  background: var(--black);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 8000;
+  transition: opacity 0.6s ease;
+}
+#loading.out { opacity: 0; pointer-events: none; }
+
+.ld-logo {
+  font-family: var(--font-brand);
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  letter-spacing: 12px;
+  color: var(--gold);
+  text-shadow: 0 0 80px rgba(212,175,55,0.5), 0 0 120px rgba(212,175,55,0.2);
+  margin-bottom: 10px;
+  animation: goldPulse 2.5s ease-in-out infinite;
+}
+@keyframes goldPulse {
+  0%,100% { text-shadow: 0 0 40px rgba(212,175,55,0.4); }
+  50%      { text-shadow: 0 0 80px rgba(212,175,55,0.7), 0 0 140px rgba(212,175,55,0.3); }
+}
+.ld-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+.ld-bar { width: 240px; height: 1px; background: var(--border); position: relative; overflow: hidden; }
+.ld-bar::after {
+  content: '';
+  position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: barSweep 1.6s ease-in-out infinite;
+}
+@keyframes barSweep { 0% { left: -100%; } 100% { left: 100%; } }
+.ld-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 2px;
+  margin-top: 14px;
+  text-transform: uppercase;
+  min-height: 14px;
+}
+
+/* ═══════ TICKER ═══════ */
+#ticker {
+  height: var(--tick);
+  background: var(--near-black);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  overflow: hidden;
+  position: sticky; top: 0; z-index: 400;
+}
+.tick-label {
+  padding: 0 14px; height: 100%;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--gold); letter-spacing: 3px;
+  text-transform: uppercase;
+  border-right: 1px solid var(--border);
+  background: var(--black);
+  display: flex; align-items: center;
+  flex-shrink: 0; gap: 7px;
+  white-space: nowrap;
+}
+.tick-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; box-shadow: 0 0 6px var(--red); animation: blink 2s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.tick-scroll { flex:1; overflow: hidden; height: 100%; display: flex; align-items: center; }
+.tick-inner {
+  display: flex; gap: 0;
+  white-space: nowrap;
+  animation: tickScroll 100s linear infinite;
+}
+.tick-inner:hover { animation-play-state: paused; }
+@keyframes tickScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+.tick-item {
+  display: inline-flex; align-items: center;
+  padding: 0 28px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-2);
+  border-right: 1px solid var(--border);
+  gap: 8px;
+}
+.tick-cat {
+  font-size: 8px; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  border: 1px solid var(--gold-dim);
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+/* ═══════ HEADER ═══════ */
+#header {
+  height: var(--hdr);
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  position: sticky; top: var(--tick); z-index: 300;
+}
+.brand { display: flex; align-items: center; gap: 18px; }
+.brand-name {
+  font-family: var(--font-brand);
+  font-size: 20px; font-weight: 700;
+  letter-spacing: 7px;
+  color: var(--gold);
+  text-shadow: 0 0 30px var(--gold-glow);
+  position: relative;
+}
+.brand-name::after {
+  content: '';
+  position: absolute; left:0; right:0; bottom:-3px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+.brand-tag {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-3); letter-spacing: 2px;
+  text-transform: uppercase;
+  border-left: 1px solid var(--border);
+  padding-left: 18px;
+}
+.hdr-right { display: flex; align-items: center; gap: 20px; }
+.live-badge {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-3); letter-spacing: 2px;
+}
+#last-upd {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-3); letter-spacing: 1px;
+}
+.refresh-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  padding: 6px 14px;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.refresh-btn:hover {
+  background: var(--gold-faint);
+  border-color: var(--gold);
+  box-shadow: 0 0 16px var(--gold-glow-sm);
+}
+.refresh-btn.spin svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════ TABS ═══════ */
+#tabs {
+  height: var(--tabs);
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-end;
+  padding: 0 20px; gap: 0;
+  position: sticky; top: calc(var(--tick) + var(--hdr)); z-index: 200;
+  overflow-x: auto; scrollbar-width: none;
+}
+#tabs::-webkit-scrollbar { display: none; }
+.tab {
+  background: none; border: none;
+  color: var(--text-3);
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 12px 18px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.tab::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px; background: var(--gold);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+}
+.tab.on { color: var(--gold); }
+.tab.on::after { transform: scaleX(1); }
+.tab:hover:not(.on) { color: var(--text-2); }
+.tab-n {
+  font-size: 8px; color: var(--gold-dim);
+  margin-left: 5px; vertical-align: middle;
+}
+.tab.on .tab-n { color: var(--gold); }
+
+/* ═══════ STATS BAR ═══════ */
+#sbar {
+  height: var(--sbar);
+  background: var(--near-black);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 0;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.sb-item { display: flex; align-items: center; gap: 6px; padding: 0 16px; border-right: 1px solid var(--border); }
+.sb-item:first-child { padding-left: 0; }
+.sb-label { color: var(--text-3); }
+.sb-val { color: var(--gold); font-weight: 700; }
+.sb-right { margin-left: auto; display: flex; align-items: center; gap: 6px; color: var(--text-3); padding-right: 0; border-right: none; }
+#countdown { color: var(--gold); }
+
+/* ═══════ LAYOUT ═══════ */
+#layout {
+  display: flex; align-items: flex-start;
+  max-width: 1700px; margin: 0 auto;
+}
+
+/* ═══════ FEED ═══════ */
+#feed { flex: 1; padding: 20px 20px 40px 20px; min-width: 0; }
+.feed-label {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.feed-label::after { content:''; flex:1; height:1px; background: var(--border); }
+
+/* Featured row (top breaking/high-score cards) */
+#featured-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-bottom: 1px; }
+.grid-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1px; background: var(--border); }
+
+/* ═══════ ARTICLE CARD ═══════ */
+.card {
+  background: var(--surface);
+  padding: 18px 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  border-left: 2px solid transparent;
+  animation: cardIn 0.35s ease both;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; bottom:0;
+  background: var(--gold-faint);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+.card:hover { background: var(--surface-hover); border-left-color: var(--gold); }
+.card:hover::before { opacity: 1; }
+
+.card.breaking {
+  border-left-color: var(--gold);
+  background: linear-gradient(135deg, #0b0900 0%, var(--surface) 60%);
+}
+.card.breaking::after {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+}
+.card.featured {
+  padding: 24px;
+}
+.card.featured .c-title {
+  font-size: 18px;
+  -webkit-line-clamp: 4;
+}
+
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.c-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; gap: 8px;
+}
+.c-cat {
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--gold); letter-spacing: 2px; text-transform: uppercase;
+  background: rgba(212,175,55,0.07);
+  border: 1px solid rgba(212,175,55,0.18);
+  padding: 2px 8px; flex-shrink: 0;
+}
+.c-breaking {
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 2px; text-transform: uppercase;
+  background: var(--gold); color: var(--black);
+  padding: 2px 8px; flex-shrink: 0;
+  animation: brkPulse 2s ease-in-out infinite;
+}
+@keyframes brkPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+.c-title {
+  font-family: var(--font-ui); font-size: 14px; font-weight: 700;
+  line-height: 1.45; color: var(--text-1);
+  margin-bottom: 9px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  transition: color 0.15s;
+}
+.card:hover .c-title { color: #fff; }
+
+.c-summary {
+  font-family: var(--font-ui); font-size: 12px;
+  line-height: 1.65; color: var(--text-2);
+  margin-bottom: 14px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.c-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 11px; margin-top: auto;
+}
+.c-source {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--gold-dim); letter-spacing: 1px; text-transform: uppercase;
+}
+.c-right { display: flex; align-items: center; gap: 10px; }
+.c-time {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-3);
+}
+.c-link {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border: 1px solid var(--border);
+  color: var(--text-3); text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.c-link:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-faint); }
+
+/* Skeleton */
+.skel { background: var(--surface); padding: 18px 20px; border-left: 2px solid transparent; }
+.sk {
+  border-radius: 2px; margin-bottom: 8px;
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer { 0%{background-position:-800px 0} 100%{background-position:800px 0} }
+.sk.xs{height:9px;width:35%}
+.sk.sm{height:14px;width:88%}
+.sk.sm2{height:14px;width:65%;margin-bottom:14px}
+.sk.md{height:11px;width:100%}
+.sk.md2{height:11px;width:75%;margin-bottom:14px}
+.sk.ft{height:9px;width:28%}
+
+/* Empty / error state */
+.no-articles {
+  grid-column:1/-1; padding:60px 32px; text-align:center;
+  font-family:var(--font-mono); font-size:11px; color:var(--text-3);
+  letter-spacing:2px; text-transform:uppercase;
+}
+
+/* ═══════ SIDEBAR ═══════ */
+#sidebar {
+  width: var(--side);
+  flex-shrink: 0;
+  padding: 20px 0 40px 0;
+  border-left: 1px solid var(--border);
+  position: sticky;
+  top: calc(var(--sticky-top) + var(--sbar));
+  max-height: calc(100vh - var(--sticky-top) - var(--sbar));
+  overflow-y: auto; scrollbar-width: none;
+}
+#sidebar::-webkit-scrollbar { display: none; }
+
+.s-section { padding: 0 20px; margin-bottom: 28px; }
+.s-title {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.s-title::before { content:''; width:3px; height:3px; background:var(--gold); flex-shrink:0; }
+
+/* Trending */
+.tr-item {
+  display: flex; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tr-item:last-child { border-bottom: none; }
+.tr-item:hover .tr-kw { color: var(--gold); }
+.tr-rank { font-family:var(--font-mono);font-size:9px;color:var(--gold-dim);width:18px;flex-shrink:0; }
+.tr-body { flex:1; padding:0 10px; }
+.tr-kw { font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--text-2);transition:color 0.15s; }
+.tr-bar { height:1px;background:var(--gold);opacity:0.25;margin-top:3px;border-radius:1px; }
+.tr-cnt { font-family:var(--font-mono);font-size:9px;color:var(--text-3); }
+
+/* Pulse */
+.pulse-item { display:flex;align-items:center;gap:9px;padding:5px 0; }
+.pulse-lbl { font-family:var(--font-mono);font-size:9px;color:var(--text-3);letter-spacing:1px;width:72px;flex-shrink:0;text-transform:uppercase; }
+.pulse-bg { flex:1;height:2px;background:var(--border);border-radius:1px;overflow:hidden; }
+.pulse-fill { height:100%;background:var(--gold);border-radius:1px;transition:width 1.2s ease; }
+.pulse-n { font-family:var(--font-mono);font-size:9px;color:var(--gold-dim);width:22px;text-align:right;flex-shrink:0; }
+
+/* Sources */
+.src-item { display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle); }
+.src-item:last-child{border-bottom:none}
+.src-name { font-family:var(--font-mono);font-size:10px;color:var(--text-2);letter-spacing:0.3px; }
+.src-badge {
+  font-family:var(--font-mono);font-size:8px;color:var(--gold);
+  background:rgba(212,175,55,0.06);
+  border:1px solid rgba(212,175,55,0.14);
+  padding:1px 6px;
+}
+
+/* ═══════ FOOTER ═══════ */
+#footer {
+  border-top: 1px solid var(--border);
+  padding: 18px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.ft-brand { font-family:var(--font-brand);font-size:12px;letter-spacing:5px;color:var(--gold-dim); }
+.ft-txt { font-family:var(--font-mono);font-size:9px;color:var(--text-3);letter-spacing:1px; }
+
+/* ═══════ TOAST ═══════ */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface-raised);
+  border: 1px solid var(--gold-dim); border-left: 3px solid var(--gold);
+  padding: 11px 18px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-2); letter-spacing: 1px;
+  z-index: 5000;
+  transform: translateX(140%);
+  transition: transform 0.3s ease;
+  max-width: 280px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+#toast.show { transform: translateX(0); }
+
+/* ═══════ RESPONSIVE ═══════ */
+@media (max-width: 1100px) {
+  #sidebar { display: none; }
+  #featured-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .brand-tag { display: none; }
+  #hdr-right .refresh-btn span { display: none; }
+  .grid-main { grid-template-columns: 1fr; }
+  #sbar .sb-item:nth-child(n+4) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-logo">NEXON</div>
+  <div class="ld-sub">Technology Intelligence Dashboard</div>
+  <div class="ld-bar"></div>
+  <div class="ld-status" id="ld-status">Initializing intelligence feeds…</div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Ticker -->
+<div id="ticker">
+  <div class="tick-label"><div class="tick-dot"></div>LIVE FEED</div>
+  <div class="tick-scroll">
+    <div class="tick-inner" id="tick-inner"></div>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="header">
+  <div class="brand">
+    <div class="brand-name">NEXON</div>
+    <div class="brand-tag">Technology Intelligence Dashboard</div>
+  </div>
+  <div class="hdr-right" id="hdr-right" style="display:flex;align-items:center;gap:20px;">
+    <div class="live-badge">
+      <div class="tick-dot"></div>
+      <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--text-3)">LIVE</span>
+    </div>
+    <div id="last-upd">—</div>
+    <button class="refresh-btn" id="refresh-btn" onclick="manualRefresh()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+      <span>REFRESH</span>
+    </button>
+  </div>
+</header>
+
+<!-- Tabs -->
+<nav id="tabs"></nav>
+
+<!-- Stats bar -->
+<div id="sbar">
+  <div class="sb-item"><span class="sb-label">Articles</span><span class="sb-val" id="s-art">—</span></div>
+  <div class="sb-item"><span class="sb-label">Sources</span><span class="sb-val" id="s-src">—</span></div>
+  <div class="sb-item"><span class="sb-label">Feeds</span><span class="sb-val" id="s-fds">—</span></div>
+  <div class="sb-item"><span class="sb-label">Breaking</span><span class="sb-val" id="s-brk">—</span></div>
+  <div class="sb-item sb-right"><span class="sb-label">Next refresh</span><span id="countdown">—</span></div>
+</div>
+
+<!-- Layout -->
+<div id="layout">
+  <main id="feed">
+    <div class="feed-label">Intelligence Feed</div>
+    <div id="featured-row"></div>
+    <div class="grid-main" id="grid"></div>
+  </main>
+  <aside id="sidebar">
+    <div class="s-section">
+      <div class="s-title">Trending Topics</div>
+      <div id="trending"></div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Topic Pulse</div>
+      <div id="pulse"></div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Active Sources</div>
+      <div id="sources"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- Footer -->
+<footer id="footer">
+  <div class="ft-brand">NEXON</div>
+  <div class="ft-txt">Technology Intelligence Platform · Real-time Aggregation · Global Sources</div>
+  <div class="ft-txt" id="ft-date"></div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   NEXON Intelligence Engine
+   ═══════════════════════════════════════════════════════ */
+
+// ─── CONFIG ───────────────────────────────────────────
+const CFG = {
+  refreshMs:    10 * 60 * 1000,
+  perFeed:      10,
+  maxTotal:     500,
+  apiBase:      'https://api.rss2json.com/v1/api.json?rss_url=',
+  proxyBase:    'https://api.allorigins.win/get?url=',
+  backendUrl:   'https://nexon-news.onrender.com'
+};
+
+// ─── CATEGORIES ───────────────────────────────────────
+const CATS = [
+  { id: 'ALL',      label: 'All' },
+  { id: 'AI',       label: 'AI & ML' },
+  { id: 'SECURITY', label: 'Cybersecurity' },
+  { id: 'DEV',      label: 'Development' },
+  { id: 'TOOLS',    label: 'Tools & Platforms' },
+  { id: 'EMERGING', label: 'Emerging Tech' },
+];
+
+// ─── FEEDS ────────────────────────────────────────────
+const FEEDS = [
+  // ── AI / ML ──
+  { url: 'https://venturebeat.com/category/ai/feed/',              src: 'VentureBeat AI',       tier: 1, cat: 'AI'       },
+  { url: 'https://www.technologyreview.com/feed/',                  src: 'MIT Tech Review',      tier: 1, cat: 'EMERGING' },
+  { url: 'https://openai.com/blog/rss.xml',                         src: 'OpenAI',               tier: 1, cat: 'AI'       },
+  { url: 'https://bair.berkeley.edu/blog/feed.xml',                 src: 'BAIR Blog',            tier: 2, cat: 'AI'       },
+  // ── Cybersecurity ──
+  { url: 'https://feeds.feedburner.com/TheHackersNews',             src: 'The Hacker News',      tier: 1, cat: 'SECURITY' },
+  { url: 'https://www.bleepingcomputer.com/feed/',                  src: 'BleepingComputer',     tier: 1, cat: 'SECURITY' },
+  { url: 'https://www.darkreading.com/rss.xml',                     src: 'Dark Reading',         tier: 1, cat: 'SECURITY' },
+  { url: 'https://www.schneier.com/blog/atom.xml',                  src: 'Schneier on Security', tier: 2, cat: 'SECURITY' },
+  { url: 'https://krebsonsecurity.com/feed/',                       src: 'Krebs on Security',    tier: 1, cat: 'SECURITY' },
+  // ── Dev ──
+  { url: 'https://news.ycombinator.com/rss',                        src: 'Hacker News',          tier: 1, cat: 'DEV'      },
+  { url: 'https://stackoverflow.blog/feed',                         src: 'Stack Overflow Blog',  tier: 1, cat: 'DEV'      },
+  { url: 'https://dev.to/feed',                                     src: 'Dev.to',               tier: 2, cat: 'DEV'      },
+  { url: 'https://www.infoq.com/feed/',                             src: 'InfoQ',                tier: 2, cat: 'DEV'      },
+  { url: 'https://github.blog/feed/',                               src: 'GitHub Blog',          tier: 1, cat: 'DEV'      },
+  // ── Tools / General ──
+  { url: 'https://techcrunch.com/feed/',                            src: 'TechCrunch',           tier: 1, cat: 'TOOLS'    },
+  { url: 'https://www.wired.com/feed/rss',                          src: 'Wired',                tier: 1, cat: 'EMERGING' },
+  { url: 'https://feeds.arstechnica.com/arstechnica/index',         src: 'Ars Technica',         tier: 1, cat: 'TOOLS'    },
+  { url: 'https://www.zdnet.com/news/rss.xml',                      src: 'ZDNet',                tier: 2, cat: 'TOOLS'    },
+];
+
+// ─── KEYWORD MAPS ─────────────────────────────────────
+const KW = {
+  AI:       ['artificial intelligence',' ai ','machine learning','deep learning','neural','gpt','llm','large language','openai','anthropic','gemini','claude','chatgpt','transformer','nlp','natural language','computer vision','generative','foundation model','diffusion','midjourney','copilot','tensorflow','pytorch','agi','hugging face','mistral','llama','stable diffusion'],
+  SECURITY: ['security','hack','breach','vulnerability','malware','ransomware','phishing','zero-day','zero day','cve','exploit','cybersecurity','cyber attack','encryption','data leak','threat actor','firewall','ddos','botnet','trojan','spyware','ciso','pentest','dark web','stolen','backdoor','credential','intrusion','patch','bug bounty'],
+  DEV:      ['developer','programming','code','software engineer','framework','open source','github','library','sdk','python','javascript','typescript','react','node','rust','golang','kotlin','swift','deployment','devops','container','ci/cd','microservice','api design','git','database','backend','frontend','full stack'],
+  TOOLS:    ['platform','launch','product','saas','cloud','aws','azure','gcp','docker','kubernetes','k8s','startup','integration','plugin','extension','ide','cli','productivity','automation','workflow','tool release','version','update','beta','general availability'],
+  EMERGING: ['quantum','blockchain','web3','augmented reality','virtual reality','xr','metaverse','biotech','nanotech','edge computing','iot','autonomous','robotics','5g','6g','space tech','fusion','semiconductor','chip','drone','self-driving','electric vehicle','climate tech'],
+};
+const BREAKING_KW = ['breaking','zero-day','critical vulnerability','data breach','major hack','emergency patch','under attack','actively exploited','urgent','mass exploitation','ransomware attack','nation-state'];
+
+// ─── STATE ────────────────────────────────────────────
+const S = {
+  articles:    [],
+  activeCat:   'ALL',
+  loading:     true,
+  activeSrcs:  new Set(),
+  feedsLoaded: 0,
+  timer:       null,
+  countdown:   CFG.refreshMs / 1000,
+  searchMode:  false,
+  searchTimer: null,
+};
+
+// ─── HELPERS ──────────────────────────────────────────
+const esc = s => !s ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const trunc = (s, n) => !s ? '' : s.length <= n ? s : s.slice(0, n) + '…';
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+function timeAgo(d) {
+  if (!d) return '—';
+  const t = new Date(d);
+  if (isNaN(t)) return '—';
+  const diff = Math.floor((Date.now() - t) / 1000);
+  if (diff < 60)   return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400)return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function stripHtml(h) {
+  if (!h) return '';
+  const el = document.createElement('div');
+  el.innerHTML = h;
+  return el.textContent || el.innerText || '';
+}
+
+function makeId(title, link) {
+  return btoa(encodeURIComponent((title || '') + (link || '')).slice(0, 60))
+    .replace(/[^a-zA-Z0-9]/g, '').slice(0, 16);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function fetchWithTimeout(url, ms = 11000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
+function setStatus(msg) {
+  const el = document.getElementById('ld-status');
+  if (el) el.textContent = msg;
+}
+
+// ─── ARTICLE LOGIC ────────────────────────────────────
+function classify(title, desc, defaultCat) {
+  const txt = ((title||'') + ' ' + (desc||'')).toLowerCase();
+  let best = defaultCat, bestScore = 1;
+  for (const [cat, kws] of Object.entries(KW)) {
+    let score = 0;
+    for (const kw of kws) if (txt.includes(kw)) score++;
+    if (score > bestScore) { bestScore = score; best = cat; }
+  }
+  return best;
+}
+
+function isBreaking(title, desc) {
+  const txt = ((title||'') + ' ' + (desc||'')).toLowerCase();
+  return BREAKING_KW.some(kw => txt.includes(kw));
+}
+
+function score(a) {
+  const age = (Date.now() - new Date(a.pubDate||0)) / 3600000;
+  let s = 100;
+  if (age < 1)      s += 55;
+  else if (age < 6) s += 35;
+  else if (age < 24)s += 12;
+  else              s -= Math.min(age * 0.4, 50);
+  if (a.breaking)   s += 35;
+  if (a.tier === 1) s += 18;
+  if (a.summary?.length > 80) s += 5;
+  return Math.max(0, Math.round(s));
+}
+
+function dedup(arts) {
+  const seen = new Set();
+  return arts.filter(a => {
+    const key = (a.title||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,48);
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+}
+
+// ─── FETCHING ─────────────────────────────────────────
+async function fetchViaRss2Json(f) {
+  const url = CFG.apiBase + encodeURIComponent(f.url) + '&count=' + CFG.perFeed;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.status !== 'ok') throw new Error(data.message || 'RSS2JSON failed');
+  return (data.items || []).map(item => buildArticle(item.title, item.link, item.description || item.content, item.pubDate, f));
+}
+
+async function fetchViaProxy(f) {
+  const url = CFG.proxyBase + encodeURIComponent(f.url);
+  const res = await fetchWithTimeout(url, 14000);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return parseXML(data.contents, f);
+}
+
+function parseXML(xml, f) {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const items = [...doc.querySelectorAll('item, entry')].slice(0, CFG.perFeed);
+  return items.map(it => {
+    const title  = it.querySelector('title')?.textContent?.trim();
+    const link   = it.querySelector('link')?.textContent?.trim() || it.querySelector('link')?.getAttribute('href') || '#';
+    const desc   = it.querySelector('description, summary, content\\:encoded, content')?.textContent || '';
+    const date   = it.querySelector('pubDate, published, updated')?.textContent || '';
+    return buildArticle(title, link, desc, date, f);
+  });
+}
+
+function buildArticle(title, link, rawDesc, pubDate, f) {
+  const summaryRaw = trunc(stripHtml(rawDesc).replace(/\s+/g,' ').trim(), 200);
+  const cat = classify(title, summaryRaw, f.cat);
+  const breaking = isBreaking(title, summaryRaw);
+  const art = { id: makeId(title, link), title: title||'Untitled', summary: summaryRaw, link: link||'#', source: f.src, tier: f.tier, pubDate, category: cat, breaking, score: 0 };
+  art.score = score(art);
+  return art;
+}
+
+async function loadFeed(f) {
+  try {
+    const arts = await fetchViaRss2Json(f);
+    S.activeSrcs.add(f.src);
+    return arts;
+  } catch (_) {
+    try {
+      const arts = await fetchViaProxy(f);
+      S.activeSrcs.add(f.src);
+      return arts;
+    } catch (e) {
+      console.warn(`[NEXON] ${f.src}: ${e.message}`);
+      return [];
+    }
+  }
+}
+
+async function loadAll() {
+  S.feedsLoaded = 0;
+  S.activeSrcs.clear();
+  const all = [];
+  const batch = 4;
+
+  for (let i = 0; i < FEEDS.length; i += batch) {
+    const chunk = FEEDS.slice(i, i + batch);
+    const results = await Promise.allSettled(chunk.map(f => loadFeed(f)));
+    results.forEach(r => {
+      S.feedsLoaded++;
+      if (r.status === 'fulfilled') all.push(...r.value);
+    });
+    setStatus(`Processing feeds… ${S.feedsLoaded} / ${FEEDS.length}`);
+    if (i + batch < FEEDS.length) await new Promise(r => setTimeout(r, 150));
+  }
+
+  const deduped = dedup(all);
+  deduped.sort((a, b) => b.score - a.score);
+  S.articles = deduped.slice(0, CFG.maxTotal);
+  S.loading = false;
+  return S.articles;
+}
+
+// ─── TRENDING ─────────────────────────────────────────
+const STOP = new Set(['the','and','for','with','that','this','from','have','will','are','was','were','has','been','its','their','they','which','when','your','more','than','also','can','not','but','about','into','after','before','some','what','over','such','other','then','there','these','those','even','just','like','well','very','said','says','use','new','how','get','all','one','two','data','using','could','would','should','being','make','made','both','another','where','out','any','who','may','only']);
+
+function trending(arts) {
+  const freq = {};
+  arts.forEach(a => {
+    const words = (a.title||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w => w.length > 3 && !STOP.has(w));
+    words.forEach(w => freq[w] = (freq[w]||0) + 1);
+    for (let i = 0; i < words.length - 1; i++) {
+      if (words[i].length > 3 && words[i+1].length > 3) {
+        const p = `${words[i]} ${words[i+1]}`;
+        freq[p] = (freq[p]||0) + 2;
+      }
+    }
+  });
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([kw,cnt])=>({kw,cnt}));
+}
+
+// ─── RENDER ───────────────────────────────────────────
+function renderTabs() {
+  const counts = Object.fromEntries(CATS.map(c=>[c.id,0]));
+  S.articles.forEach(a => { counts['ALL']++; if(counts[a.category]!==undefined) counts[a.category]++; });
+  document.getElementById('tabs').innerHTML = CATS.map(c =>
+    `<button class="tab ${S.activeCat===c.id?'on':''}" onclick="setcat('${c.id}')">${c.label}<span class="tab-n">${counts[c.id]||0}</span></button>`
+  ).join('');
+}
+
+function renderCard(a, delay, cls='') {
+  return `
+  <div class="card ${a.breaking?'breaking':''} ${cls}" style="animation-delay:${delay}ms" onclick="window.open('${esc(a.link)}','_blank','noopener')">
+    <div class="c-top">
+      <span class="c-cat">${a.category}</span>
+      ${a.breaking?'<span class="c-breaking">Breaking</span>':''}
+    </div>
+    <div class="c-title">${esc(a.title)}</div>
+    ${a.summary?`<div class="c-summary">${esc(trunc(a.summary,160))}</div>`:''}
+    <div class="c-foot">
+      <span class="c-source">${esc(a.source)}</span>
+      <div class="c-right">
+        <span class="c-time">${timeAgo(a.pubDate)}</span>
+        <a class="c-link" href="${esc(a.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open article">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSkel(n) {
+  return Array(n).fill(0).map(() => `
+  <div class="skel">
+    <div class="sk xs"></div>
+    <div class="sk sm"></div><div class="sk sm2"></div>
+    <div class="sk md"></div><div class="sk md2"></div>
+    <div style="border-top:1px solid #141414;padding-top:11px;display:flex;justify-content:space-between">
+      <div class="sk ft" style="margin:0;width:75px"></div>
+      <div class="sk ft" style="margin:0;width:55px"></div>
+    </div>
+  </div>`).join('');
+}
+
+function renderFeed(articles) {
+  const arts = articles || (S.activeCat === 'ALL' ? S.articles : S.articles.filter(a => a.category === S.activeCat));
+  const breaking = arts.filter(a => a.breaking);
+  const regular  = arts.filter(a => !a.breaking);
+  const sorted   = [...breaking, ...regular];
+
+  // Featured: top 2 breaking cards (or top 2 if none breaking)
+  const feat  = sorted.slice(0, 2);
+  const rest  = sorted.slice(2);
+
+  const featEl = document.getElementById('featured-row');
+  const gridEl = document.getElementById('grid');
+
+  if (sorted.length === 0) {
+    featEl.innerHTML = '';
+    gridEl.innerHTML = `<div class="no-articles">No articles found — pull to refresh</div>`;
+    return;
+  }
+
+  featEl.style.marginBottom = feat.length ? '1px' : '0';
+  featEl.style.background = feat.length ? 'var(--border)' : 'transparent';
+  featEl.innerHTML = feat.map((a,i) => renderCard(a, i*80, 'featured')).join('');
+  gridEl.innerHTML = rest.map((a,i) => renderCard(a, Math.min(i*35, 900))).join('');
+}
+
+function renderSidebar() {
+  // Trending
+  const tr = trending(S.articles);
+  const maxTr = tr[0]?.cnt || 1;
+  document.getElementById('trending').innerHTML = tr.slice(0,8).map((t,i) =>
+    `<div class="tr-item" onclick="doSearch('${esc(t.kw)}')">
+      <span class="tr-rank">0${i+1}</span>
+      <div class="tr-body">
+        <div class="tr-kw">${cap(t.kw)}</div>
+        <div class="tr-bar" style="width:${Math.round(t.cnt/maxTr*100)}%"></div>
+      </div>
+      <span class="tr-cnt">${t.cnt}</span>
+    </div>`
+  ).join('') || '<div style="font-family:var(--font-mono);font-size:9px;color:var(--text-3);padding:8px 0">Loading…</div>';
+
+  // Pulse
+  const counts = Object.fromEntries(CATS.filter(c=>c.id!=='ALL').map(c=>[c.id,0]));
+  S.articles.forEach(a => { if(counts[a.category]!==undefined) counts[a.category]++; });
+  const maxC = Math.max(...Object.values(counts), 1);
+  document.getElementById('pulse').innerHTML = Object.entries(counts).map(([cat,n]) =>
+    `<div class="pulse-item">
+      <span class="pulse-lbl">${cat}</span>
+      <div class="pulse-bg"><div class="pulse-fill" style="width:${Math.round(n/maxC*100)}%"></div></div>
+      <span class="pulse-n">${n}</span>
+    </div>`
+  ).join('');
+
+  // Sources
+  const srcMap = {};
+  S.articles.forEach(a => srcMap[a.source] = (srcMap[a.source]||0)+1);
+  const topSrc = Object.entries(srcMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  document.getElementById('sources').innerHTML = topSrc.map(([s,n]) =>
+    `<div class="src-item"><span class="src-name">${esc(s)}</span><span class="src-badge">${n}</span></div>`
+  ).join('');
+}
+
+function renderTicker() {
+  const items = S.articles.slice(0, 28);
+  if (!items.length) return;
+  const html = items.map(a =>
+    `<span class="tick-item"><span class="tick-cat">${a.category}</span>${esc(trunc(a.title,75))}</span>`
+  ).join('');
+  document.getElementById('tick-inner').innerHTML = html + html;
+}
+
+function renderStats() {
+  document.getElementById('s-art').textContent = S.articles.length;
+  document.getElementById('s-src').textContent = S.activeSrcs.size;
+  document.getElementById('s-fds').textContent = FEEDS.length;
+  document.getElementById('s-brk').textContent = S.articles.filter(a=>a.breaking).length;
+}
+
+function renderLastUpd() {
+  const now = new Date();
+  document.getElementById('last-upd').textContent = `UPDATED ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}`;
+  document.getElementById('ft-date').textContent = now.toLocaleDateString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+}
+
+function renderSkeletons() {
+  document.getElementById('featured-row').innerHTML = `<div class="skel featured">${Array(1).fill(0).map(()=>`<div class="sk xs"></div><div class="sk" style="height:18px;width:90%;margin-bottom:6px"></div><div class="sk" style="height:18px;width:68%;margin-bottom:14px"></div><div class="sk md"></div><div class="sk md2"></div>`).join('')}</div>`.repeat(2);
+  document.getElementById('grid').innerHTML = `<div class="grid-main" style="background:var(--border);display:contents">${renderSkel(10)}</div>`;
+}
+
+// ─── INTERACTIONS ──────────────────────────────────────
+function setcat(id) {
+  S.activeCat = id;
+  S.searchMode = false;
+  clearTimeout(S.searchTimer);
+  renderTabs();
+  renderFeed();
+}
+
+function doSearch(kw) {
+  const matches = S.articles.filter(a => {
+    const txt = ((a.title||'')+(a.summary||'')).toLowerCase();
+    return txt.includes(kw.toLowerCase());
+  });
+  if (!matches.length) return;
+  renderFeed(matches);
+  toast(`Showing ${matches.length} articles for "${kw}"`);
+  clearTimeout(S.searchTimer);
+  S.searchTimer = setTimeout(() => { renderFeed(); }, 10000);
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────
+function startCountdown() {
+  S.countdown = CFG.refreshMs / 1000;
+  clearInterval(S.timer);
+  S.timer = setInterval(() => {
+    S.countdown--;
+    const m = String(Math.floor(S.countdown/60)).padStart(2,'0');
+    const s = String(S.countdown%60).padStart(2,'0');
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = `${m}:${s}`;
+    if (S.countdown <= 0) doRefresh();
+  }, 1000);
+}
+
+// ─── REFRESH ──────────────────────────────────────────
+async function doRefresh(silent=false) {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spin');
+  if (!silent) renderSkeletons();
+  await loadAll();
+  btn.classList.remove('spin');
+  renderTabs(); renderFeed(); renderSidebar(); renderStats(); renderTicker(); renderLastUpd();
+  startCountdown();
+  if (!silent) toast(`✓ ${S.articles.length} articles loaded from ${S.activeSrcs.size} sources`);
+}
+
+async function manualRefresh() {
+  await doRefresh(false);
+}
+
+// ─── INIT ──────────────────────────────────────────────
+async function init() {
+  // Skeleton immediately
+  renderSkeletons();
+  renderTabs();
+
+  // Fetch feeds
+  await loadAll();
+
+  // Hide loading
+  const ov = document.getElementById('loading');
+  ov.classList.add('out');
+  setTimeout(() => { ov.style.display='none'; }, 600);
+
+  // Render everything
+  renderTabs();
+  renderFeed();
+  renderSidebar();
+  renderStats();
+  renderTicker();
+  renderLastUpd();
+  startCountdown();
+
+  // Refresh timestamps every 60s
+  setInterval(renderLastUpd, 60000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
